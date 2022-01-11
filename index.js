@@ -3,7 +3,7 @@ const http = require('http');
 const urlParser = require('url');
 const crypto = require('crypto');
 
-const SERVER_PORT = process.env.SERVER_PORT || 8000;
+const SERVER_PORT = process.env.PORT || 8000;
 const WORDS_LIST = fs.readFileSync(__dirname + '/words/en.txt').toString('UTF8').split('\n');
 
 const ALGORITHM = 'aes-256-ctr';
