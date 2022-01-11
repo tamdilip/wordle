@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <title>WORD GUESSER</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            box-sizing: border-box;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background: #f4674a;
+        }
+
+        .w-40 {
+            width: 40px !important;
+        }
+
+        .wd-50 {
+            width: 50px !important;
+        }
+
+        .ht-25 {
+            height: 25px !important;
+        }
+
+        .ht-50 {
+            height: 50px !important;
+        }
+
+        .w-fc {
+            width: fit-content !important;
+        }
+
+        .f-100 {
+            font-size: 100px !important;
+        }
+
+        table,
+        td {
+            color: white !important;
+            border: 5px solid #914b3d !important;
+        }
+
+        .bg-fade {
+            -webkit-transition: background-color 500ms linear !important;
+            -moz-transition: background-color 500ms linear !important;
+            -o-transition: background-color 500ms linear !important;
+            -ms-transition: background-color 500ms linear !important;
+            transition: background-color 500ms linear !important;
+        }
+    </style>
+</head>
+
+<body ng-app="WordleApp">
+    <div ng-controller="WordleController">
+        <div class="modal fade" id="invalidWord">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="invalidWordLabel">Word not in the list 🙁</h5>
+                        <button type="button" class="btn-close text-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="faqModal">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">RULES</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="w-100">
+                            <tr>
+                                <td class="bg-success wd-50 ht-50"></td>
+                                <td class="bg-white text-dark"> <strong> Letter is in the right place !</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="bg-secondary wd-50 ht-50"></td>
+                                <td class="bg-white text-dark"> <strong> Letter is not in the word !</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="bg-warning wd-50 ht-50"></td>
+                                <td class="bg-white text-dark"> <strong> Letter is misplaced !</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="gameResultModal" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-body text-center">
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn-close text-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <h5 class="modal-title text-center w-100" ng-show="gameWon">YOU WON</h5>
+                        <h5 class="modal-title text-center w-100" ng-hide="gameWon">YOU LOST</h5>
+                        <div class="text-center f-100" ng-show="gameWon">🤩</div>
+                        <div class="text-center f-100" ng-hide="gameWon">😞</div>
+                        <div class="my-4">
+                            <button type="button" class="btn btn-warning" ng-click="newSelfChallenge()">NEW
+                                GAME</button>
+                            <button type="button" class="btn btn-warning" ng-click="shareResult()">SHARE RESULT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="newChallenge" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-center text-white bg-dark">
+                    <div class="modal-body">
+                        <div class="input-group form-check form-switch justify-content-center p-0 mt-4">
+                            <div>Self play</div>
+                            <input class="form-check-input rounded-pill mx-2 ht-25 wd-50" type="checkbox"
+                                ng-model="selfPlayMode">
+                            <div>Share play</div>
+                        </div>
+                        <div ng-hide="selfPlayMode" class="my-3">
+                            <button type="button" class="btn btn-warning" ng-click="newSelfChallenge()">NEW
+                                GAME</button>
+                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal" ng-show="inPlay">
+                                CONTINUE GAME</button>
+                        </div>
+                        <div ng-hide="!selfPlayMode">
+                            <div class="input-group my-3">
+                                <input type="text" class="form-control" placeholder="ENTER FIVE LETTER WORD"
+                                    ng-model="customWord" maxlength="5">
+                                <button type="button" class="btn btn-warning" ng-click="newCustomChallenge()"
+                                    ng-disabled="customWord.length<5"
+                                    ng-keyup="$event.keyCode == 13 && newCustomChallenge()">GENERATE</button>
+                            </div>
+                            <div class="input-group mb-3" ng-show="customWordCode && codeGenerated">
+                                <input type="text" class="form-control" ng-model="customWordCode"
+                                    ng-disabled="customWordCode">
+                                <button type="button" class="btn btn-warning"
+                                    ng-click="shareChallenge(customWordCode)">SHARE</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container w-fc">
+            <div class="row">
+                <div class="col">
+                    <div class="d-flex justify-content-between bg-dark mt-4">
+                        <button class="border-0 bg-dark py-2" data-bs-toggle="modal"
+                            data-bs-target="#faqModal">❓</button>
+                        <h2 class="text-center text-white mt-2"> ~ WORDLE ~ </h2>
+                        <button class="border-0 bg-dark py-2" data-bs-toggle="modal"
+                            data-bs-target="#newChallenge">⚙️</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="w-100">
+                <tr ng-repeat="(key, guessedWord) in tries track by $index">
+                    <td ng-repeat="letter in guessedWord track by $index" class="bg-fade wd-50 ht-50 "
+                        ng-class="{'bg-dark': triesResult[key][$index] == undefined, 'bg-secondary': triesResult[key][$index] == 0,'bg-success': triesResult[key][$index] == 1, 'bg-warning': triesResult[key][$index] == 2 }">
+                        <p class="text-center m-auto"><strong>{{letter}}</strong></p>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="row my-5">
+                <div class="col bg-dark rounded">
+                    <div class="row text-center justify-content-evenly" ng-repeat="keys in virtualKeys track by $index">
+                        <div class="col-2 p-0" ng-show="$last">
+                            <button class="border-1 p-2 bg-dark text-white"
+                                ng-click="onVirtualKeyPress('ENTER')">🆗</button>
+                        </div>
+                        <div class="col-1 p-0 mx-0" ng-repeat="k in keys track by $index">
+                            <button class="fw-bold border-1 py-2 bg-dark text-white"
+                                ng-click="onVirtualKeyPress(k)">{{k}}</button>
+                        </div>
+                        <div class="col-2 p-0" ng-show="$last">
+                            <button class="border-1 p-2 bg-dark text-white"
+                                ng-click="onVirtualKeyPress('DELETE')">🔙</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const invalidWordModal = new bootstrap.Modal(document.getElementById('invalidWord'));
+        const newChallengeModal = new bootstrap.Modal(document.getElementById('newChallenge'));
+        const gameResultModal = new bootstrap.Modal(document.getElementById('gameResultModal'));
+        const QWERTY = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+        let guessingWord = '', tryCount = 0;
+
+
+        const WordleApp = angular.module('WordleApp', []);
+        WordleApp.controller('WordleController', function ($scope, $http, $window, $location) {
+            $scope.virtualKeys = QWERTY.map(rows => rows.split(''));
+            $scope.customWord = '';
+            $window.onload = () => {
+                $scope.tries = JSON.parse(localStorage.getItem('guessedWords')) || new Array(6).fill('').map(a => new Array(5).fill(''));
+                $scope.triesResult = JSON.parse(localStorage.getItem('validationResult')) || [];
+                const urlSearchParams = new URLSearchParams(window.location.search);
+                $scope.customWordCode = localStorage.getItem('gameCode') || Object.fromEntries(urlSearchParams.entries()).code;
+                $scope.gameWon = $scope.triesResult.some(states => states.every(s => s == 1));
+                $scope.gameCompleted = $scope.triesResult.length === 6 || $scope.gameWon;
+                $scope.inPlay = $scope.customWordCode && !$scope.gameWon ? true : false;
+
+                tryCount = $scope.triesResult.length;
+                guessingWord = $scope.tries[tryCount].join('') || '';
+
+                !$scope.customWordCode && newChallengeModal.show();
+                $scope.gameCompleted && gameResultModal.show();
+                $scope.$apply();
+            };
+
+            $scope.onVirtualKeyPress = (key) => {
+                let keyCode;
+                if (key === 'ENTER') keyCode = 13;
+                else if (key === 'DELETE') keyCode = 8;
+                else keyCode = key.charCodeAt();
+                keyPressHandler(keyCode, null, true);
+            };
+
+            $scope.shareChallenge = (shareCode) => {
+                if (navigator.share)
+                    navigator.share({
+                        title: 'WORDLE - challenging you !!',
+                        url: `${location.origin}/?code=${shareCode}`
+                    }).catch(console.error);
+                else
+                    alert("Browser doesn't support share !!");
+            };
+
+            $scope.shareResult = () => {
+                const resultEmoji = { 0: '⬛', 1: '🟩', 2: '🟨' };
+                const gameResultShare = $scope.triesResult.map(state => state.map(s => resultEmoji[s]).join('')).join('\n');
+                if (navigator.share)
+                    navigator.share({
+                        text: `WORDLE   ${$scope.triesResult.length}/6 \n\n ${gameResultShare}`
+                    }).catch(console.error);
+                else
+                    alert("Browser doesn't support share !!");
+            };
+
+            const onChallengeCreate = ({ data }) => {
+                $scope.inPlay = true;
+                $scope.codeGenerated = true;
+                $scope.customWordCode = data.code;
+                localStorage.setItem('gameCode', $scope.customWordCode);
+            };
+
+            $scope.newSelfChallenge = () => {
+                $http.get(`/create`)
+                    .then((res) => {
+                        localStorage.clear();
+                        $scope.tries = new Array(6).fill('').map(a => new Array(5).fill(''));
+                        $scope.triesResult = [];
+                        guessingWord = '';
+                        tryCount = 0;
+                        onChallengeCreate(res);
+                        newChallengeModal.hide();
+                        gameResultModal.hide();
+                    });
+            };
+
+            $scope.newCustomChallenge = () => {
+                $http.get(`/create?word=${$scope.customWord.toUpperCase()}`).then(onChallengeCreate);
+            };
+
+            const updateWordValidation = ({ data }) => {
+                if (data) {
+                    $scope.triesResult.push(data);
+                    if (!data.every(d => d == 1)) {
+                        tryCount++;
+                        guessingWord = '';
+                    } else {
+                        $scope.inPlay = false;
+                        $scope.gameWon = true;
+                        gameResultModal.show();
+                    }
+                    if ($scope.triesResult.length == 6) {
+                        gameResultModal.show();
+                    }
+                    localStorage.setItem('validationResult', JSON.stringify($scope.triesResult));
+
+                } else {
+                    invalidWordModal.show();
+                    setTimeout(() => invalidWordModal.hide(), 2000);
+                }
+            };
+
+            const validateWord = (word) => {
+                $http.get(`/validate?word=${word}&code=${$scope.customWordCode}`).then(updateWordValidation, console.error);
+            };
+
+            const keyPressHandler = (keyCode, id, isVirtual) => {
+                if ($scope.inPlay && id != 'newChallenge') {
+                    if (keyCode == 13 && guessingWord.length == 5)
+                        validateWord(guessingWord);
+                    else {
+                        if (keyCode == 8)
+                            guessingWord = guessingWord.slice(0, -1);
+                        else if (keyCode >= 64 && keyCode <= 90 && guessingWord.length < 5)
+                            guessingWord += String.fromCharCode(keyCode);
+                        const letters = guessingWord.split('');
+                        $scope.tries[tryCount] = $scope.tries[tryCount].map((v, i) => (v = letters[i] || '', v));
+                        !isVirtual && $scope.$apply();
+
+                        localStorage.setItem('guessedWords', JSON.stringify($scope.tries));
+                    }
+                }
+            };
+
+            document.addEventListener('keydown', function (e) {
+                const { keyCode, delegateTarget: { id } = {} } = e;
+                keyPressHandler(keyCode, id);
+            });
+        });
+    </script>
+</body>
+
+</html>
