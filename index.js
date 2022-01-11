@@ -58,7 +58,7 @@ const requestListener = async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ code: shareCode }));
     } else {
-        fs.promises.readFile(__dirname + `/public${req.url === '/' ? '/index.html' : req.url}`)
+        fs.promises.readFile(__dirname + `/public${pathname === '/' ? '/index.html' : pathname}`)
             .then(html => {
                 res.writeHead(200, { 'Content-Type': 'text/html' });
                 res.end(html);
