@@ -1,0 +1,22 @@
+{
+    "name": "WORDLE",
+    "short_name": "WORDLE",
+    "start_url": "index.html",
+    "display": "standalone",
+    "background_color": "#f4674a",
+    "theme_color": "black",
+    "scope": ".",
+    "description": "Wordle a word guesser web app game.",
+    "icons": [
+        {
+            "src": "images/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png"
+        },
+        {
+            "src": "images/icon-310x310.png",
+            "sizes": "310x310",
+            "type": "image/png"
+        }
+    ]
+}

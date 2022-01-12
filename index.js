@@ -1,5 +1,6 @@
 const fs = require('fs');
 const http = require('http');
+const path = require('path');
 const urlParser = require('url');
 const crypto = require('crypto');
 
@@ -12,12 +13,14 @@ const IV_LENGTH = 16;
 
 
 const getWordStatus = async (guessedWord, code) => {
-    const isValidWord = WORDS_LIST.includes(guessedWord.toLowerCase());
-    if (!isValidWord) return;
-
-    const finalWordLetters = getDecryptedWord(code).toUpperCase().split('');
+    const decryptedWord = getDecryptedWord(code).toUpperCase();
+    const finalWordLetters = decryptedWord.split('');
     const guessedWordLetters = guessedWord.split('');
     console.log({ finalWordLetters, guessedWordLetters });
+
+    if (decryptedWord == guessedWord) return [1, 1, 1, 1, 1];
+    const isValidWord = WORDS_LIST.includes(guessedWord.toLowerCase());
+    if (!isValidWord) return;
 
     return guessedWordLetters.map((v, i) => finalWordLetters[i] === v ? 1 : finalWordLetters.includes(v) ? 2 : 0);
 };
@@ -37,6 +40,28 @@ const getDecryptedWord = (text) => {
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();
+};
+
+const getContentType = (filePath) => {
+    const extname = String(path.extname(filePath)).toLowerCase();
+    const mimeTypes = {
+        '.html': 'text/html',
+        '.js': 'text/javascript',
+        '.css': 'text/css',
+        '.json': 'application/json',
+        '.png': 'image/png',
+        '.jpg': 'image/jpg',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.wav': 'audio/wav',
+        '.mp4': 'video/mp4',
+        '.woff': 'application/font-woff',
+        '.ttf': 'application/font-ttf',
+        '.eot': 'application/vnd.ms-fontobject',
+        '.otf': 'application/font-otf',
+        '.wasm': 'application/wasm',
+    };
+    return mimeTypes[extname] || 'text/html';
 };
 
 const requestListener = async (req, res) => {
@@ -60,7 +85,7 @@ const requestListener = async (req, res) => {
     } else {
         fs.promises.readFile(__dirname + `/public${pathname === '/' ? '/index.html' : pathname}`)
             .then(html => {
-                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.writeHead(200, { 'Content-Type': getContentType(pathname) });
                 res.end(html);
             }).catch(() => {
                 res.writeHead(400);
