@@ -5,7 +5,7 @@
 
 Inspired from Wordle app to built with additional options -
 
-▪️Additional options to generate a game with customized words and challenge with others.
+▪️Generate a game with your customized word and challenge with others.
 
 ▪️More than one word a day to play as many as you like.
 
