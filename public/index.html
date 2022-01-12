@@ -203,7 +203,8 @@
                                 ng-click="onVirtualKeyPress('ENTER')">🆗</button>
                         </div>
                         <div class="col-1 p-0 mx-0" ng-repeat="k in keys track by $index">
-                            <button class="fw-bold fs-2 border-1 py-2 bg-dark text-white"
+                            <button class="fw-bold fs-2 border-1 py-2 bg-dark"
+                                ng-class="{ 'text-white': alphMap[k] == '*', 'text-secondary': alphMap[k] == 0, 'text-success': alphMap[k] == 1, 'text-warning': alphMap[k] == 2 }"
                                 ng-click="onVirtualKeyPress(k)">{{k}}</button>
                         </div>
                         <div class="col-2 p-0" ng-show="$last">
@@ -219,6 +220,7 @@
         const invalidWordModal = new bootstrap.Modal(document.getElementById('invalidWord'));
         const newChallengeModal = new bootstrap.Modal(document.getElementById('newChallenge'));
         const gameResultModal = new bootstrap.Modal(document.getElementById('gameResultModal'));
+        const ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const QWERTY = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
         let guessingWord = '', tryCount = 0;
 
@@ -238,6 +240,7 @@
 
         const WordleApp = angular.module('WordleApp', []);
         WordleApp.controller('WordleController', function ($scope, $http, $window, $location) {
+            $scope.alphMap = ALPHABETS.split('').reduce((a, v) => (a[v] = '*', a), {});
             $scope.virtualKeys = QWERTY.map(rows => rows.split(''));
             $scope.customWord = '';
             $window.onload = () => {
@@ -255,6 +258,11 @@
 
                 !$scope.customWordCode && newChallengeModal.show();
                 $scope.gameCompleted && gameResultModal.show();
+
+                $scope.tries.slice(0, $scope.triesResult.length).flat().forEach((v, i) => {
+                    $scope.alphMap[v] != 1 && ($scope.alphMap[v] = $scope.triesResult.flat()[i]);
+                });
+
                 $scope.$apply();
             };
 
@@ -303,6 +311,7 @@
                         $scope.triesResult = [];
                         guessingWord = '';
                         tryCount = 0;
+                        $scope.alphMap = ALPHABETS.split('').reduce((a, v) => (a[v] = '*', a), {});
                         onChallengeCreate(res);
                         newChallengeModal.hide();
                         gameResultModal.hide();
@@ -316,6 +325,9 @@
             const updateWordValidation = ({ data }) => {
                 if (data) {
                     $scope.triesResult.push(data);
+                    $scope.tries[$scope.triesResult.length - 1].forEach((v, i) => {
+                        $scope.alphMap[v] != 1 && ($scope.alphMap[v] = data[i]);
+                    });
                     if (!data.every(d => d == 1)) {
                         tryCount++;
                         guessingWord = '';
