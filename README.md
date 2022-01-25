@@ -26,9 +26,16 @@ Inspired from Wordle app to built with additional options -
 ```
 
 ## APP UI
+
+### Wordle
 > https://wordlee.herokuapp.com/
 
 ![Image of demo-ui](https://raw.githubusercontent.com/tamdilip/wordle/main/public/images/docs/0_demo_pwa_collage.jpg)
+
+### Scrambler
+> http://wordlee.herokuapp.com/scrambler
+
+![Image of demo-scrambler-ui](https://raw.githubusercontent.com/tamdilip/wordle/main/public/images/docs/93_demo_scrambler.png)
 
 
 **Happy coding :) !!**
