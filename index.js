@@ -64,6 +64,11 @@ const getContentType = (filePath) => {
     return mimeTypes[extname] || 'text/html';
 };
 
+const uiRoutes = {
+    '/': '/index.html',
+    '/scrambler': '/views/scrambler.html'
+};
+
 const requestListener = async (req, res) => {
     let urlParsed = urlParser.parse(req.url, true);
     let { query: { word, code }, pathname } = urlParsed;
@@ -83,7 +88,7 @@ const requestListener = async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ code: shareCode }));
     } else {
-        fs.promises.readFile(__dirname + `/public${pathname === '/' ? '/index.html' : pathname}`)
+        fs.promises.readFile(__dirname + `/public${uiRoutes[pathname] || pathname}`)
             .then(html => {
                 res.writeHead(200, { 'Content-Type': getContentType(pathname) });
                 res.end(html);
